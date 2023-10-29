@@ -4,6 +4,11 @@
 .site-header {
   font-family: 'Verdana', serif !important;
 }
+
+#index{
+  background-image: url(/img/background-login.png);
+}
+
 .jumbotron .display-4 {
   font-weight: bold;
 }
@@ -13,7 +18,7 @@ nav a {
 }
 
 .bd-placeholder-img {
-  font-size: 1.12rem;
+  font-size: 1.125rem;
   text-anchor: middle;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -26,7 +31,7 @@ nav a {
     font-size: 3.5rem;
   }
 }
-
+/*
 .jumbotron {
   height: 50vh;
   padding: 5em inherit;
@@ -39,7 +44,7 @@ nav a {
   color: black;
   font-weight: bold;
 }
-
+*/
 @media (min-width: 768px) {
   .jumbotron {
     padding-top: 6rem;
@@ -188,48 +193,246 @@ a.custom-card:hover {
   color: orange;
 }
 
+.titulo {
+  font-size: 2rem;
+  padding: 2vw 2vw 0 2vw;
+  text-align: center;
+}
 
-.container {
-  /*background: linear-gradient(201deg, #6dff33 0%, #fa361c 78%);*/
+.subtitulo {
+  font-size: 1.2rem;
+  padding: 0 2vw 2vw 2vw;
+  text-align: center;
+}
+
+.form-signin {
+  width: 100%;
+  max-width: 500px;
+  padding: 15px;
+  margin: 0 auto;
+}
+
+.cover-img1 {
+  width: 100%;
+  padding: 20px;
+}
+
+.cover-img2 {
+  width: 100%;
+}
+
+.cover-img3{
+  width: 30%;
+  margin-top: 7vw;
+  margin-bottom: 5vw;
+}
+
+
+.col1 {
   display: flex;
-  flex-direction: column;
   align-items: center;
 }
 
-.form-group {
-  margin-bottom: 15px;
+.col2 {
+  background-color: #fdf4e7;
+  border-radius: 25px;
+  margin: 25px;
 }
 
-label {
-  display: block;
+.login-container {
+height: 75vh;
 }
 
-input[type="text"],
-input[type="password"] {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-}
-
-button {
-  background-color: #007bff;
-  color: #fff;
-  padding: 10px 20px;
+#boton-iniciar-sesion {
+  color: #fdf4e7;
+  background-color: #e6900e;
   border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  border-radius: 100px;
+  padding: 10px;
+  margin: 10px;
+  width: 250px;
+}
+
+.input-container {
+  position: relative;
+  display: inline-block;
+}
+
+.login-input {
+  width: 200px;
+  height: 40px;
+  border: none;
+  border-radius: 20px;
+  font-size: 16px;
+  width: 250px;
+  padding: 10px 10px 10px 40px;
+  margin: 10px;
+}
+
+.circulo {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  background-color: #e6900e;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-icon {
+  width: 50%;
+}
+#navbar{
+  background-color: #eba63e;
+}
+.nav-link {
+  color: #fdf4e7;
+}
+
+.nav-link:hover{
+  color: black;
+}
+
+#bton {
+  background-color: #eba63e;
+  color: #fdf4e7;
+}
+
+#bton:hover {
+  color: black;
+}
+
+.heartbtn{
+  color: rgb(255, 255, 255);
+  opacity: 80%;
+  font-size: 150%;
+  background-color: transparent;
+  border: none;
+}
+
+.heartbtn:hover{
+  color: #e4e4e4;
+  opacity: 100%;
+}
+
+.heartbtnok{
+  color: red;
+  opacity: 100%;
+  font-size: 150%; 
+}
+
+.zoom:active{
   width: 100%;
 }
 
-button:hover {
-  background-color: #56a0f0;
+#heart {
+  text-shadow: 0 0 3px #000;
 }
 
-.borde-gris {
-  border-color: #6e6e6e;
+
+
+.comentado{
+  display: flex;
 }
 
-#filtrarPrecio, #filtrarLimpiar {
-  border-radius: 3px;
+hr{
+  color: rgb(99, 30, 5);
+}
+
+#profile-menu{
+ color: white;
+ border: none;
+}
+
+
+
+/* Animacion de circulo de fondo */
+
+.circle1 {
+  width: 80vw;
+  height: 80vw;
+  background-color: orange;
+  border-radius: 50%;
+  opacity: 0;
+  position: absolute;
+  animation-name: aparicion1;
+  animation-duration: 1s;
+  animation-delay: 2s;
+  animation-fill-mode: forwards;
+  z-index: -1;
+  right: -20%;
+  top: -20%;
+}
+
+.circle2 {
+  width: 80vw;
+  height: 80vw;
+  background-color: orange;
+  border-radius: 50%;
+  opacity: 0;
+  position: absolute;
+  animation-name: aparicion2;
+  animation-duration: 1s;
+  animation-delay: 2s;
+  animation-fill-mode: forwards;
+  z-index: -1;
+  right: -20%;
+  top: -20%;
+}
+
+.circle3 {
+  width: 80vw;
+  height: 80vw;
+  background-color: orange;
+  border-radius: 50%;
+  opacity: 0;
+  position: absolute;
+  animation-name: aparicion3;
+  animation-duration: 1s;
+  animation-delay: 2s;
+  animation-fill-mode: forwards;
+  z-index: -1;
+  right: -20%;
+  top: -20%;
+}
+
+.circle-container {
+  width: 100vw;
+}
+
+@keyframes aparicion1 {
+  0% {
+      opacity: 0;
+      transform: scale(0.5);
+  }
+  100% {
+      opacity: 30%;
+      transform: scale(1);
+  }
+}
+
+@keyframes aparicion2 {
+  0% {
+      opacity: 0;
+      transform: scale(0.5);
+  }
+  100% {
+      opacity: 20%;
+      transform: scale(1.5);
+  }
+}
+
+@keyframes aparicion3 {
+  0% {
+      opacity: 0;
+      transform: scale(0.5);
+  }
+  100% {
+      opacity: 10%;
+      transform: scale(2);
+  }
 }

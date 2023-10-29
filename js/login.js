@@ -1,27 +1,48 @@
-document.addEventListener("DOMContentLoaded", function() {
-  const loginForm = document.getElementById('loginForm');
+function showAlertSuccess() {
+  document.getElementById("alert-success").classList.add("show");
+  setTimeout(() => {
+    document.getElementById("alert-success").classList.remove("show");
+  }, 2000);
+}
 
-  loginForm.addEventListener('submit', function(e) {
-      e.preventDefault();
+function showAlertError() {
+  document.getElementById("alert-danger").classList.add("show");
+  setTimeout(() => {
+    document.getElementById("alert-danger").classList.remove("show");
+  }, 2000);
+}
 
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+function showAlertEmailError() {
+  document.getElementById("alert-email-danger").classList.add("show");
+  setTimeout(() => {
+    document.getElementById("alert-email-danger").classList.remove("show");
+  }, 2000);
+}
 
-      const userData = localStorage.getItem(username);
+let btn = document.getElementById("boton-iniciar-sesion");
+let email = document.getElementById("email");
+let pw = document.getElementById("password");
 
-      if (userData) {
-          const usuario = JSON.parse(userData);
-          if (password === usuario.contrasena) {
-              localStorage.setItem('isLoggedIn', 'true');
-              localStorage.setItem('username', username);
+btn.addEventListener("click", function (e) {
+  e.preventDefault();
 
-              // Redireccionar a la página de inicio
-              window.location.href = "index.html";
-          } else {
-              alert("Contraseña incorrecta. Intente de nuevo.");
-          }
-      } else {
-          alert("Usuario no encontrado. Por favor, regístrate primero.");
-      }
-  });
+  const datos = {
+    email: email.value,
+    password: pw.value,
+  };
+
+  localStorage.datos = JSON.stringify(datos);
+
+  let expReg = /^[^@]+@[^@]+\.[a-zA-Z]{2,}$/;
+
+  if (expReg.test(email.value) && email.value && pw.value.length > 4) {
+    showAlertSuccess();
+    setTimeout(() => {
+      location.href = "index.html";
+    }, 1000);
+  } else if (!expReg.test(email.value)) {
+    showAlertEmailError();
+  } else {
+    showAlertError();
+  }
 });

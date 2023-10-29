@@ -1,174 +1,150 @@
-document.addEventListener('DOMContentLoaded', async () => {
+//URL que contiene los datos
+const URL =
+  "https://japceibal.github.io/emercado-api/cats_products/" +
+  localStorage.getItem("catID") +
+  ".json";
+const storedData = JSON.parse(localStorage.datos);
+const listContainer = document.getElementsByClassName("list-container");
+const btnMinMax = document.getElementById("minMax");
+const btnMaxMin = document.getElementById("maxMin");
+const btnRelevancia = document.getElementById("btnRelevancia");
+const buscador = document.getElementById("buscador");
+const filtrar = document.getElementById("rangeFilterCount");
+const rangeFilterCountMin = document.getElementById("rangeFilterCountMin");
+const rangeFilterCountMax = document.getElementById("rangeFilterCountMax");
 
-    const btnPrecioAsc = document.getElementById("precioAsc");
-    const btnPrecioDesc = document.getElementById("precioDesc");
-    const btnRelevancia = document.getElementById("relevancia");
-    const btnNoFiltro = document.getElementById("noFiltro");
-    const buscador = document.getElementById("buscador");
-    const btnFiltrar = document.getElementById("filtrarPrecio");
-    const btnLimpiar = document.getElementById("filtrarLimpiar");
+// Función para mostrar los productos en el contenedor
+function showProducts(products) {
+  listContainer[0].innerHTML = "";
+  showData(products);
+}
 
-    // Obtener el valor del localStorage
-    const selectedCategoryId = localStorage.getItem("catID");
+// Función para ordenar productos por precio ascendente
+function sortProductsByPriceAsc(products) {
+  return products.sort((a, b) => a.cost - b.cost);
+}
 
-    // Comprobar si hay una categoría seleccionada en el localStorage
-    if (selectedCategoryId) {
-        let response = await getJSONData(PRODUCTS_URL + selectedCategoryId + EXT_TYPE);
-        const carList = response.data;
+// Función para ordenar productos por precio descendente
+function sortProductsByPriceDesc(products) {
+  return products.sort((a, b) => b.cost - a.cost);
+}
 
-        let productList = [...carList.products];
-        let productListFiltrar = [...carList.products];
-        let filtro = "";
+// Función para ordenar productos por relevancia
+function sortProductsByRelevance(products) {
+  return products.sort((a, b) => b.soldCount - a.soldCount);
+}
 
-        const prodTitle = document.getElementById("titulo");
-        prodTitle.innerHTML = `
-            <h1> Productos </h1>
-            <p>Aqui veras los productos de la categoria ${carList.catName}</p>`;
+// Función para filtrar productos por nombre o descripcion
+function filterProductsByName(products, searchTerm) {
+  return products.filter((product) =>
+    product.name.toLowerCase().includes(searchTerm) || product.description.toLowerCase().includes(searchTerm)
+  );
+}
 
-        ListarDatos(productList);
-
-
-        btnPrecioAsc.addEventListener("click", function () {
-            filtro = "PrecioAsc";
-            filtrar(filtrarPrecio(productList), filtro);
-        });
-
-        btnPrecioDesc.addEventListener("click", function () {
-            filtro = "PrecioDesc";
-            filtrar(filtrarPrecio(productList), filtro);
-        });
-
-        btnRelevancia.addEventListener("click", function () {
-            filtro = "Relevancia";
-            filtrar(filtrarPrecio(productList), filtro);
-        });
-
-        btnNoFiltro.addEventListener("click", function () {
-            filtro = "";
-            container.innerHTML = "";
-            let input = buscador.value.toLowerCase();
-            productList = productListFiltrar.filter(item => item.name.toLowerCase().includes(input) || item.description.toLowerCase().includes(input) || item.currency.toLowerCase().includes(input) || item.cost.toString().includes(input));
-            filtrar(filtrarPrecio(productList), filtro);
-        });
-
-        buscador.addEventListener("input", function () {
-            let input = buscador.value.toLowerCase();
-            productList = productListFiltrar.filter(item => item.name.toLowerCase().includes(input) || item.description.toLowerCase().includes(input) || item.currency.toLowerCase().includes(input) || item.cost.toString().includes(input));
-            container.innerHTML = "";
-            filtrar(filtrarPrecio(productList), filtro);
-        });
-
-        btnFiltrar.addEventListener("click", function () {
-            filtrar(filtrarPrecio(productList), filtro);
-        });
-
-        btnLimpiar.addEventListener("click", function () {
-            let precioMin = document.getElementById("inputmin");
-            let precioMax = document.getElementById("inputmax");
-            let input = buscador.value.toLowerCase();
-            productList = productListFiltrar.filter(item => item.name.toLowerCase().includes(input) || item.description.toLowerCase().includes(input) || item.currency.toLowerCase().includes(input) || item.cost.toString().includes(input));
-            precioMin.value = "";
-            precioMax.value = "";
-            container.innerHTML = "";
-            filtrar(filtrarPrecio(productList), filtro);
-        })
-
+// Función para filtrar productos por rango de precio
+function filterProductsByPriceRange(products, min, max) {
+  return products.filter((product) => {
+    if (isNaN(min) && isNaN(max)) {
+      return product.cost >= 0;
     }
-});
-
-function filtrarPrecio(array) {
-    let precioMin = document.getElementById("inputmin").value;
-    let precioMax = document.getElementById("inputmax").value;
-    let datosSorteados = array;
-    if (precioMax == "") {
-        precioMax = Number.MAX_SAFE_INTEGER;
+    if (isNaN(min)) {
+      return product.cost <= max;
     }
-    datosSorteados = array.filter(producto =>
-        parseInt(producto.cost) >= precioMin && parseInt(producto.cost) <= precioMax
+    if (isNaN(max)) {
+      return product.cost >= min;
+    }
+    return product.cost >= min && product.cost <= max;
+  });
+}
+
+// Función para limpiar los filtros de rango de precio
+function clearPriceRangeFilter(data) {
+  listContainer[0].innerHTML = "";
+  rangeFilterCountMin.value = "";
+  rangeFilterCountMax.value = "";
+  showData(data);
+}
+
+//Funcion que hace el fetch de la url
+async function getJsonData(url) {
+  const response = await fetch(url);
+  const data = await response.json();
+  const products = data.products;
+  showData(data.products);
+  titulo(data);
+
+  btnMinMax.addEventListener("click", function () {
+    showProducts(sortProductsByPriceAsc(data.products));
+  });
+
+  btnMaxMin.addEventListener("click", function () {
+    showProducts(sortProductsByPriceDesc(data.products));
+  });
+
+  btnRelevancia.addEventListener("click", function () {
+    showProducts(sortProductsByRelevance(data.products));
+  });
+
+  buscador.addEventListener("input", function (e) {
+    showProducts(
+      filterProductsByName(data.products, e.target.value.toLowerCase())
     );
-    return datosSorteados;
+  });
+
+  filtrar.addEventListener("click", function () {
+    const min = parseInt(rangeFilterCountMin.value);
+    const max = parseInt(rangeFilterCountMax.value);
+    console.log(min);
+    const filteredProducts = filterProductsByPriceRange(
+      data.products,
+      min,
+      max
+    );
+    showProducts(sortProductsByPriceAsc(filteredProducts));
+  });
+
+  document
+    .getElementById("clearRangeFilter")
+    .addEventListener("click", function () {
+      clearPriceRangeFilter(data.products);
+    });
 }
 
-function filtrar(array, filtro) {
-    let datosSorteados = array;
-    if (filtro === "PrecioDesc") {
-        datosSorteados = array.sort(function (a, b) {
-            if (a.cost < b.cost) {
-                return 1;
-            }
-            if (a.cost > b.cost) {
-                return -1;
-            }
-            return 0;
-        })
-    } else if (filtro === "PrecioAsc") {
-        datosSorteados = array.sort(function (a, b) {
-            if (a.cost > b.cost) {
-                return 1;
-            }
-            if (a.cost < b.cost) {
-                return -1;
-            }
-            return 0;
+getJsonData(URL);
 
-        })
-    } else if (filtro === "Relevancia") {
-        datosSorteados = array.sort(function (a, b) {
-            if (a.soldCount < b.soldCount) {
-                return 1;
-            }
-            if (a.soldCount > b.soldCount) {
-                return -1;
-            }
-            return 0;
-        })
-    }
-    container.innerHTML = "";
-    ListarDatos(datosSorteados);
-
+//Funcion para mostrar el nombre en pantalla
+function titulo(items) {
+  let htmlContentToAppend = "";
+  htmlContentToAppend += `
+        <h2>Productos</h2>
+        <p class="lead">Verás aquí todas los productos de categoria <strong>${items.catName}</strong>.</p>
+    `;
+  document.getElementById("containerTitulo").innerHTML = htmlContentToAppend;
 }
 
-//AGREGU'E ESTE PARA QUE AL HACER CLICK SE GUARDE EN EL LOCAL Y ME MANDE A LA OTRA PAGINA
-
-function guardarProductos(productoId) {
-    localStorage.setItem("productoSeleccionado", productoId);
-    console.log(productoId)
-    window.location.href = "product-info.html"
-}
-
-
-
-function ListarDatos(productList) {
-    const container = document.getElementById('container');
-
-    productList.forEach(prodList => {
-        let name = prodList.name;
-        let description = prodList.description;
-        let price = prodList.cost;
-        let currency = prodList.currency;
-        let soldCount = prodList.soldCount;
-        let image = prodList.image;
-
-        const productsList = document.createElement('div');
-        productsList.innerHTML = `
-        <div onclick="guardarProductos(${prodList.id})" class="list-group-item list-group-item-action cursor-active">
-            <div class="row">
-                <div class="col-3">
-                        <img src="${image}" alt="${prodList.image}" class="img-thumbnail">
+//Funcion que muestra los datos
+function showData(dataArray) {
+  for (const item of dataArray) {
+    listContainer[0].innerHTML += `
+        <div  class="list-group-item list-group-item-action cursor-active" onclick = "setProductsId(${item.id})">
+                <div class="row">
+                    <div class="col-3">
+                    <img src="${item.image}" alt="Imagen del modelo ${item.name}" class="img-thumbnail">
                     </div>
-                        <div class="col">
-                            <div class="d-flex w-100 justify-content-between">
-                                <p class="mb-1">${name} - ${currency} ${price}</p>
-                                <small class="text-muted">${soldCount} vendidos</small>
+                    <div class="col">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h4 class="mb-1">${item.name} - ${item.currency} ${item.cost}</h4>
+                            <small class="text-muted">${item.soldCount} vendidos</small>
                         </div>
-                        <small class="text-muted">${description} vendidos</small>
+                        <p class="mb-1">${item.description}</p>
                     </div>
                 </div>
             </div>
-            </div>`;
-        container.appendChild(productsList);
-    })
-
-
+        `;
+  }
 }
 
+function setProductsId(id){
+     localStorage.setItem("idProd", id);
+     window.location = "product-info.html" 
+}
