@@ -1,270 +1,227 @@
 
+document.addEventListener('DOMContentLoaded', async () => {
 
-// Url que llama al JSON de los comentarios de cada producto
-const URLCOM =
-  "https://japceibal.github.io/emercado-api/products_comments/" +
-  localStorage.getItem("idProd") +
-  ".json";
+    let producto = await obtenerProductoSeleccionado();
+    let coment = await obtenerComentariosSeleccionado();
+    let relatedProducts = producto.relatedProducts;
 
-// Url que llama al JSON de las categorias
-const URL =
-  "https://japceibal.github.io/emercado-api/cats_products/" +
-  localStorage.getItem("catID") +
-  ".json";
+    mostrarProductoSeleccionado(producto)
+    mostrarImgProducto(producto)
+    listarRelatedProducts(relatedProducts);
+    listarComentarios(coment);
+})
 
-//Url de info de productos
-const URLPROD =
-  "https://japceibal.github.io/emercado-api/products/" +
-  localStorage.getItem("idProd") +
-  ".json";
+const selectedId = localStorage.getItem("productoSeleccionado");
 
-const products = document.getElementById("productInfo");
+async function obtenerProductoSeleccionado() {
+    const responseId = await getJSONData(PRODUCT_INFO_URL + selectedId + EXT_TYPE);
+    let producto = responseId.data;
 
-// Funcion que muestra la informacion del producto en el div de productos
-function productsInfo(item) {
-  products.innerHTML += `
-      <div>
-        <h2 class="text-center pt-5">${item.name}</h2>
-        <hr />
-        <div class="row">   
-          <div class="col-md-8">
-            <div
-              class="ecommerce-gallery"
-              data-mdb-zoom-effect="true"
-              data-mdb-auto-height="true"
-            >
-              <div class="row py-3 shadow-5">
-                <div class="col-12 mb-1 position-relative">
-                  <div class="lightbox">
-                    <button
-                      class="btn-block heartbtn position-absolute top-0 end-0 me-3 mt-1"
-                      id="heartbtn"
-                      onclick="favorite()"
-                    >
-                      <i class="fas fa-heart" id="heart"></i>
-                    </button>
-                    <img id="img-lg"
-                      src= ${item.images[0]}
-                      alt="Gallery image 1"
-                      class="ecommerce-gallery-main-img active w-100"
-                    />
-                  </div>
-                </div>
-                ${generateImages(item)}
-              </div>
+    return producto
+}
+
+function mostrarProductoSeleccionado(producto) {
+
+    const idProductosPrincipal = document.getElementById('principal');
+
+    idProductosPrincipal.innerHTML += `
+    
+    <div class="info">
+        <div id="Nombre">
+            <hr>
+            <h1>${producto.name}</h1>
+            <hr>
+        </div>
+        <p><span class="bold">Precio</span>:<br>${producto.currency}:${producto.cost}</p>
+        <p><span class="bold">Descripción:</span><br>${producto.description}</p>
+        <p><span class="bold">Categoría</span>:<br>${producto.category}</p>
+        <p><span class="bold">Cantidad de vendidos</span>:<br>${producto.soldCount}</p>
+        <button id="agregarAlCarrito" onclick='agregarAlCarrito(${JSON.stringify(producto)})'>Agregar al carrito</button>
+        </div>
+    
+        <div id="imagen-grande"></div>
+    `;
+
+
+}
+
+function mostrarImgProducto(producto) {
+    const imagenGrande = document.getElementById("imagen-grande");
+    const imagenes = producto.images;
+
+    imagenGrande.innerHTML = `
+    <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="${imagenes[0]}">
             </div>
-          </div>
-          <div class="col-md-4">
-            <strong>Precio</strong>
-            <p>${item.currency} ${item.cost}</p>
-            <strong>Descripcion</strong>
-            <p>${item.description}</p>
-            <strong>Categoria</strong>
-            <p>${item.category}</p>
-            <strong>Cantidad de Vendidos</strong>
-            <p>${item.soldCount}</p>
-            <button class="btn btn-primary">Comprar<i></i></button>
-            <button class="btn btn-dark" id = "cartBtn">
-              Agregar
-              <i class="fas fa-shopping-cart"></i>
-            </button>
-          </div>
+            <div class="carousel-item">
+                <img src="${imagenes[1]}">
+            </div>
+            <div class="carousel-item">
+                <img src="${imagenes[2]}">
+            </div>
+            <div class="carousel-item">
+                <img src="${imagenes[3]}">
+            </div>
         </div>
-        <hr />
-      </div>
-    `;
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>`;
+
 }
 
-// Función que muestra la alerta cuando el comentario no cumple los requisitos
-function showAlertWarning() {
-  document.getElementById("alert-warning").classList.add("show");
-  setTimeout(() => {
-    document.getElementById("alert-warning").classList.remove("show");
-  }, 1000);
-}
+//Y Obtener los comentarios 
+async function obtenerComentariosSeleccionado() {
 
-// Genera las imágenes de la galería del producto
-function generateImages(item) {
-  let images = "";
+    let obtenerComentarios = await getJSONData(PRODUCT_INFO_COMMENTS_URL + selectedId + EXT_TYPE);
+    let comentarios = obtenerComentarios.data;
 
-  for (let i = 0; i < item.images.length; i++) {
-    images += `
-      <div class="col-3 mt-1">
-        <a href = "#">
-          <img onclick="newImg(${item.id}, ${i + 1})"
-            src="${item.images[i]}"
-            alt="Gallery image ${i + 1}"
-            class="w-100"
-          />
-        </a>
-      </div>
-    `;
-  }
+    const comentariosGuardados = JSON.parse(localStorage.getItem(`comentarios_${selectedId}`));
 
-  return images;
-}
-
-// Funcion que cambia la imagen, segun la que toques
-function newImg(id, num) {
-  document.getElementById("img-lg").src = "img/prod" + id + "_" + num + ".jpg";
-}
-
-let stars = "";
-
-// Funcion que toma la calificacion y devuelve el html para que se muestre en iconos de estrellas
-function starCalif(n) {
-  stars = "";
-  for (let i = 1; i <= n; i++) {
-    stars += `<span class="fa fa-star checked"></span>`;
-  }
-  for (let j = n; j < 5; j++) {
-    stars += `<span class="fa fa-star"></span>`;
-  }
-  return stars;
-}
-
-const commentBtn = document.getElementById("commentbtn");
-
-// Event Listener que agregar el comentario ingresado
-commentBtn.addEventListener("click", function (e) {
-  e.preventDefault();
-  let selectElement = document.getElementById("calificacion");
-  let selectedValue = selectElement.value;
-  let comment = document.getElementById("textComment");
-  let comments = document.getElementById("comText");
-
-  // Creacion de la fecha en el formato solicitado
-  let date = new Date();
-  let year = date.getFullYear();
-  let month = ("0" + (date.getMonth() + 1)).slice(-2);
-  let day = ("0" + date.getDate()).slice(-2);
-  let hour = ("0" + date.getHours()).slice(-2);
-  let minute = ("0" + date.getMinutes()).slice(-2);
-  let second = ("0" + date.getSeconds()).slice(-2);
-  let dateFormat =
-    year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
-
-  const storedData = JSON.parse(localStorage.datos);
-  if (selectedValue != "Calificación" && comment.value != "") {
-    comments.innerHTML += `
-      <div class="comentado">
-        <div>
-          <p><strong>${storedData.email.split("@")[0]}</strong></p>
-        </div>  
-        <div class="text-muted">
-          <small> &nbsp; - ${dateFormat} - &nbsp; </small>
-        </div>
-        <div class="stars">${starCalif(selectedValue)}</div>
-      </div>
-      <div>${comment.value}</div> 
-      <hr>
-    `;
-    comment.value = "";
-    selectElement.value = "Calificación";
-  } else {
-    showAlertWarning();
-  }
-});
-
-// Guarda el id del producto en el localStorage
-function setProdId(id) {
-  localStorage.setItem("idProd", id);
-  window.location = "product-info.html";
-}
-
-const productsRelated = document.getElementById("related-products");
-
-// Agrega la información de los productos relacionados
-function showRelatedProducts(array) {
-  let relatedProductsHTML = "";
-  for (let i = 0; i < array.relatedProducts.length; i++) {
-    relatedProductsHTML += `
-      <div class="col-md-2 img-thumbnail m-1" onclick="setProdId(${array.relatedProducts[i].id})">
-        <a class="link-dark" href = "#">
-          <img src= ${array.relatedProducts[i].image} class="img-fluid">
-          <h6 class="pt-2">${array.relatedProducts[i].name}</h6>
-        </a> 
-      </div>
-    `;
-  }
-
-  productsRelated.innerHTML = relatedProductsHTML;
-}
-function showAlertWarning() {
-  document.getElementById("alert-warning").classList.add("show");
-  document.getElementById("alert-warning").classList.remove("d-none");
-  setTimeout(function () {
-    document.getElementById("alert-warning").classList.add("d-none");
-  }, 1500);
-}
-
-// Funcion que cambia el color del icono de favoritos, cuando le damos click
-function favorite() {
-  document.getElementById("heartbtn").classList.toggle("heartbtnok");
-}
-
-const idProducto = localStorage.getItem("idProd");
-
-async function getJsonData(url) {
-  const response = await fetch(url);
-  const data = await response.json();
-  productsInfo(data);
-  showRelatedProducts(data);
-
-  const btnCart = document.getElementById("cartBtn");
-
-  let listCart = JSON.parse(localStorage.getItem("list")) || [];
-
-  btnCart.addEventListener("click", function () {
-    const objetoEncontrado = listCart.find((item) => item.id === data.id);
-    showAlertWarning();
-    if (objetoEncontrado) {
-      // El objeto existe en listCart, incrementa count para que no se repita el producto
-      objetoEncontrado.count++;
-    } else {
-      const obj = {
-        id: data.id,
-        name: data.name,
-        count: 1,
-        unitCost: data.cost,
-        currency: data.currency,
-        image: `img/prod${data.id}_1.jpg`,
-      };
-      listCart.push(obj);
+    if (comentariosGuardados) {
+        comentarios = comentariosGuardados;
     }
 
-    // Guarda el arreglo en el almacenamiento
-    sessionStorage.setItem("list", JSON.stringify(listCart));
-    localStorage.setItem("list", JSON.stringify(listCart));
-  });
+    let btn = document.getElementById("btnEnviar");
+    btn.addEventListener("click", () => {
+
+        let opinion = document.getElementById("txtareaOpinion").value;
+        let puntuación = document.getElementById("selectionPuntaje").value;
+        let fecha = new Date().toLocaleDateString('en-US');
+        let usermail = localStorage.getItem('usermail');
+        let user = '';
+
+        if (JSON.parse(localStorage.getItem(usermail)).name != '') {
+            user = JSON.parse(localStorage.getItem(usermail)).name;
+        } else {
+            user = usermail;
+        }
+
+        let comentarioNuevo = {
+            product: localStorage.getItem('productoSeleccionado'),
+            score: puntuación,
+            description: opinion,
+            user: user,
+            dateTime: fecha
+        };
+
+        comentarios.push(comentarioNuevo);
+
+        localStorage.setItem(`comentarios_${selectedId}`, JSON.stringify(comentarios));
+
+        document.getElementById("txtareaOpinion").value = "";
+        document.getElementById("selectionPuntaje").value = "1";
+        listarComentarios(comentarios);
+
+    })
+
+    return comentarios;
 }
 
-getJsonData(URLPROD);
 
-// Funcion que muestra los comentarios que vienen del JSON
-function nuevoCom(comments) {
-  for (let comment of comments) {
-    comText.innerHTML += `
-      <div class="comentado">
-        <div>
-          <p><strong>${comment.user}</strong></p>
-        </div>  
-        <div class="text-muted">
-          <small> &nbsp; - ${comment.dateTime} - &nbsp; </small>
-        </div>
-        <div>${starCalif(comment.score)}</div>
-      </div>
-      <div>${comment.description}</div> 
-      <hr>
-  `;
-  }
+function agregarAlCarrito(producto) {
+    let productosEnCarrito = JSON.parse(localStorage.getItem('productosEnCarrito')) || [];
+
+    let itemCarrito = {
+        'id': producto.id,
+        'name': producto.name,
+        'count': 1,
+        'unitCost': producto.cost,
+        'currency': 'USD',
+        'image': producto.images[0]
+    }
+
+    let existe = productosEnCarrito.find(item => item.id === producto.id)
+
+    if(existe){
+        console.log("estas en if")
+        existe.count += itemCarrito.count;
+    }
+
+    else  {
+        productosEnCarrito.push(itemCarrito);
+    }
+
+    localStorage.setItem('productosEnCarrito', JSON.stringify(productosEnCarrito));
+    window.location='cart.html';
+
+    
 }
 
-// Funcion que trae el JSON de los comentarios y ejecuta la funcion que los muestra
-async function cargarComments(url) {
-  const response = await fetch(url);
-  const data = await response.json();
-  nuevoCom(data);
+
+
+
+function listarComentarios(comentarios) {
+    let comentariosParrafo = document.getElementById('comentariosParrafo')
+    let listaComentarios = document.createElement('ul');
+
+    listaComentarios.classList.add('list-group');
+
+    comentarios.forEach(comentario => {
+        comentariosParrafo.innerHTML = `
+            <hr>
+            <h3>Comentarios</h3>
+            <br>`;
+
+        let listItem = document.createElement('li');
+        listItem.classList.add('list-group-item');
+
+        let name = comentario.user;
+        let date = new Date(comentario.dateTime).toLocaleDateString();
+        let score = comentario.score;
+        let description = comentario.description;
+        let stars = "";
+
+        for (var i = 1; i <= score; i++) {
+            stars += `<i class="fa fa-star checked"></i>`;
+        }
+        for (var j = 1; j <= (5 - score); j++) {
+            stars += `<i class="fa fa-star"></i>`;
+        }
+
+        listItem.innerHTML = `
+            <strong>${name} </strong> 
+            <small class="text-muted">${date} </small>
+            ${score} ${stars}
+            <p>${description}</p>`;
+
+        listaComentarios.appendChild(listItem);
+        comentariosParrafo.appendChild(listaComentarios);
+    })
 }
 
-cargarComments(URLCOM);
+function listarRelatedProducts(array) {
+    let principal = document.getElementById('info-producto');
+    let titulo = document.createElement('div');
+    let contenedorRP = document.createElement('div');
+    titulo.innerHTML = `
+        <hr>
+        <h3>Productos Relacionados</h3>
+        <br>`
+    contenedorRP.classList.add('cont-prodRelacionados');
+    array.forEach(i => {
+        let contProducto = document.createElement('div');
+        contProducto.classList.add('card', 'bd-placeholder-img', 'cursor-active', 'card-img-top');
+        let id = i.id;
+        let name = i.name;
+        let img = i.image;
+        contProducto.innerHTML += `
+        
+            <h5 class="p-1">${name}</h5>
+            <img onclick="guardarProductos(${id})" src="${img}"></img>
+        `
+        contenedorRP.appendChild(contProducto);
+    });
+    principal.appendChild(titulo);
+    principal.appendChild(contenedorRP);
+}
+
+
+
